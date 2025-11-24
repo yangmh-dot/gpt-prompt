@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YT / 圖片 Shorts Prompt 產生器</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+      color: #e5e7eb;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 1.2rem;
+    }
+    .card {
+      background: rgba(15,23,42,0.9);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(148,163,184,0.3);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.8);
+      margin-bottom: 16px;
+    }
+    label {
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 4px;
+      color: #cbd5f5;
+    }
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .row > .col {
+      flex: 1 1 200px;
+    }
+    .small {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #38bdf8);
+      color: #020617;
+      box-shadow: 0 10px 25px rgba(34,197,94,0.35);
+      width: 100%;
+      margin-top: 8px;
+    }
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 4px 10px rgba(34,197,94,0.5);
+    }
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      background: rgba(30,64,175,0.8);
+      color: #e5e7eb;
+      border: 1px solid rgba(129,140,248,0.8);
+    }
+    .btn-sm:active {
+      transform: translateY(1px);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(148,163,184,0.4);
+      color: #9ca3af;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+    .output-block {
+      margin-top: 8px;
+    }
+    .output-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .status {
+      font-size: 0.85rem;
+      margin-top: 6px;
+      min-height: 1.2em;
+    }
+    .status-ok {
+      color: #4ade80;
+    }
+    .status-error {
+      color: #f97373;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(30,64,175,0.7);
+      color: #c7d2fe;
+    }
+    .toggle-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .toggle-line input {
+      margin-right: 4px;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <h1>YT / 圖片 Shorts Prompt 產生器</h1>
+      <div class="subtitle">
+        丟 YouTube Shorts 連結或圖片，幫你看縮圖 / 畫面，生出「類似內容」的中英描述詞與 AI 影片 prompt。
+      </div>
+
+      <!-- API Key 區塊 -->
+      <div class="card" style="background: radial-gradient(circle at top left,#0f172a,#020617); margin-bottom: 16px;">
+        <label for="apiKey">OpenAI API Key</label>
+        <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+        <div class="toggle-line">
+          <span class="small">不會上傳到伺服器，只在你的瀏覽器裡用來呼叫 OpenAI。</span>
+          <label style="display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="rememberKey" />
+            <span>記住在本機</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 輸入來源區塊 -->
+      <div class="card">
+        <div class="row">
+          <div class="col">
+            <label for="ytUrl">YouTube Shorts 連結（可空白改用圖片）</label>
+            <input id="ytUrl" type="text" placeholder="https://www.youtube.com/shorts/xxxx 或 https://youtu.be/xxxx" />
+            <div class="small">
+              若有填連結，會自動抓縮圖給模型看，用來推測影片風格與主題。
+            </div>
+          </div>
+          <div class="col">
+            <label for="imageFile">或上傳圖片擷取畫面</label>
+            <input id="imageFile" type="file" accept="image/*" />
+            <div class="small">
+              上傳圖片時，會優先使用圖片內容；只在你的瀏覽器轉成 base64 後傳給 OpenAI。
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label for="notes">補充說明（可選）</label>
+          <textarea id="notes" placeholder="例如：5 秒迴圈、要貓狗主題、美式幽默、Sora 9:16 直式..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="generateBtn">
+          ⚡ 產生中英文描述詞
+        </button>
+        <div class="status" id="statusText"></div>
+      </div>
+
+      <!-- 輸出區塊 -->
+      <div class="card" id="outputCard" style="display:none;">
+        <div class="row">
+          <div class="col output-block">
+            <div class="output-title">
+              <span>英文標題 / 描述 / Prompt</span>
+              <button class="btn btn-sm" data-copy-target="enPromptArea">複製英文 Prompt</button>
+            </div>
+            <textarea id="enTitleDesc" readonly></textarea>
+            <div style="margin-top:6px;">
+              <textarea id="enPromptArea" readonly></textarea>
+            </div>
+            <div style="margin-top:6px;" id="enTagsBox"></div>
+          </div>
+          <div class="col output-block">
+            <div class="output-title">
+              <span>中文標題 / 描述 / Prompt</span>
+              <button class="btn btn-sm" data-copy-target="zhPromptArea">複製中文 Prompt</button>
+            </div>
+            <textarea id="zhTitleDesc" readonly></textarea>
+            <div style="margin-top:6px;">
+              <textarea id="zhPromptArea" readonly></textarea>
+            </div>
+            <div style="margin-top:6px;" id="zhTagsBox"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <span class="badge">建議用途：Sora / Pika / Runway 等 AI 影片模型 Prompt</span>
+        </div>
+      </div>
+
+      <!-- 附註 -->
+      <div class="small" style="margin-top:12px;opacity:0.85;">
+        提示：目前是根據「縮圖 / 圖片」來推測內容風格，並延伸出類似但不完全相同的短片點子與 prompt。
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // 儲存 / 載入 API Key
+    (function initKey() {
+      const saved = localStorage.getItem("yt_img_prompt_openai_key");
+      if (saved) {
+        document.getElementById("apiKey").value = saved;
+        document.getElementById("rememberKey").checked = true;
+      }
+    })();
+
+    document.getElementById("rememberKey").addEventListener("change", (e) => {
+      const remember = e.target.checked;
+      const key = document.getElementById("apiKey").value.trim();
+      if (remember && key) {
+        localStorage.setItem("yt_img_prompt_openai_key", key);
+      } else {
+        localStorage.removeItem("yt_img_prompt_openai_key");
+      }
+    });
+
+    document.getElementById("apiKey").addEventListener("input", () => {
+      const remember = document.getElementById("rememberKey").checked;
+      const key = document.getElementById("apiKey").value.trim();
+      if (remember) {
+        if (key) {
+          localStorage.setItem("yt_img_prompt_openai_key", key);
+        } else {
+          localStorage.removeItem("yt_img_prompt_openai_key");
+        }
+      }
+    });
+
+    // Copy 按鈕
+    document.querySelectorAll(".btn-sm[data-copy-target]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-copy-target");
+        const el = document.getElementById(targetId);
+        if (!el) return;
+        const text = el.value || el.textContent || "";
+        if (!text.trim()) return;
+        navigator.clipboard.writeText(text).then(() => {
+          const old = btn.textContent;
+          btn.textContent = "已複製！";
+          setTimeout(() => (btn.textContent = old), 1200);
+        });
+      });
+    });
+
+    // 讀取圖片檔為 data URL
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 從 YouTube 連結抓 video id
+    function extractYouTubeId(url) {
+      if (!url) return null;
+      try {
+        const u = new URL(url.trim());
+        if (u.hostname.includes("youtu.be")) {
+          return u.pathname.replace("/", "");
+        }
+        if (u.pathname.startsWith("/shorts/")) {
+          return u.pathname.split("/")[2];
+        }
+        if (u.searchParams.get("v")) {
+          return u.searchParams.get("v");
+        }
+      } catch (e) {
+        return null;
+      }
+      // 退一步：用簡單 regex 試試
+      const m = url.match(/(?:v=|\/shorts\/|youtu\.be\/)([A-Za-z0-9_\-]{8,})/);
+      return m ? m[1] : null;
+    }
+
+    async function handleGenerate() {
+      const apiKey = document.getElementById("apiKey").value.trim();
+      const ytUrl = document.getElementById("ytUrl").value.trim();
+      const imageFile = document.getElementById("imageFile").files[0];
+      const notes = document.getElementById("notes").value.trim();
+      const statusEl = document.getElementById("statusText");
+      const btn = document.getElementById("generateBtn");
+
+      statusEl.textContent = "";
+      statusEl.className = "status";
+
+      if (!apiKey) {
+        statusEl.textContent = "請先輸入 OpenAI API Key。";
+        statusEl.classList.add("status-error");
+        return;
+      }
+
+      let imagePayload = null;
+      let modeLabel = "";
+
+      try {
+        if (imageFile) {
+          // 使用上傳圖片
+          const dataUrl = await readFileAsDataURL(imageFile);
+          imagePayload = {
+            type: "image_url",
+            image_url: { url: dataUrl }
+          };
+          modeLabel = "User uploaded image as main reference frame.";
+        } else if (ytUrl) {
+          const vid = extractYouTubeId(ytUrl);
+          if (!vid) {
+            statusEl.textContent = "解析 YouTube 連結失敗，請檢查網址是否正確。";
+            statusEl.classList.add("status-error");
+            return;
+          }
+          const thumbUrl = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
+          imagePayload = {
+            type: "image_url",
+            image_url: { url: thumbUrl }
+          };
+          modeLabel = `You are seeing a thumbnail automatically derived from this YouTube Shorts link: ${ytUrl}`;
+        } else {
+          statusEl.textContent = "請至少提供 YouTube 連結或上傳一張圖片。";
+          statusEl.classList.add("status-error");
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "讀取圖片時發生錯誤。";
+        statusEl.classList.add("status-error");
+        return;
+      }
+
+      const systemPrompt =
+        "You are a professional YouTube Shorts creative director and AI video prompt engineer. " +
+        "Given a single reference image (thumbnail or still frame) and some optional notes, " +
+        "you must propose a similar short-form vertical video idea and write bilingual prompts " +
+        "(Traditional Chinese and English) for an AI video model such as Sora.\n\n" +
+        "Always respond with VALID JSON ONLY, no extra commentary, no markdown. " +
+        "Use this exact JSON schema:\n" +
+        "{\n" +
+        '  "title_en": string,                // catchy English YouTube Shorts title\n' +
+        '  "desc_en": string,                 // 1–2 sentence English description of the short video idea\n' +
+        '  "prompt_en": string,               // detailed English prompt for an AI video model (Sora-style)\n' +
+        '  "title_zh": string,                // 繁體中文 YouTube Shorts 吸睛標題\n' +
+        '  "desc_zh": string,                 // 1–2 句繁體中文說明這支短片的內容\n' +
+        '  "prompt_zh": string,               // 詳細的繁體中文 AI 影片生成 prompt\n' +
+        '  "tags_en": string[],               // 3–8 English tags/keywords\n' +
+        '  "tags_zh": string[]                // 3–8 繁體中文關鍵字\n' +
+        "}\n\n" +
+        "Constraints:\n" +
+        "- All Chinese MUST be in Traditional Chinese.\n" +
+        "- The video should be 5–10 seconds, vertical 9:16, optimized for YouTube Shorts.\n" +
+        "- Keep the idea similar in spirit to the reference image, but not an exact copy.\n" +
+        "- Do NOT include backticks or markdown, ONLY raw JSON.";
+
+      const userText =
+        modeLabel + "\n\n" +
+        "Task:\n" +
+        "1. Look at the image and infer what kind of short-form vertical video this suggests " +
+        "(main subject, style, camera angle, mood, environment).\n" +
+        "2. Propose a fresh, similar idea that would perform well as a 5–10 second YouTube Shorts.\n" +
+        "3. Fill every field of the JSON schema. Do not skip any key.\n\n" +
+        "User notes (hard constraints, if any): " + (notes || "none") + "\n";
+
+      btn.disabled = true;
+      btn.textContent = "⏳ 產生中，請稍候...";
+      statusEl.textContent = "";
+      statusEl.className = "status";
+
+      try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: userText },
+                  imagePayload
+                ]
+              }
+            ],
+            max_tokens: 600
+          })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("OpenAI error:", errText);
+          statusEl.textContent = "OpenAI API 呼叫失敗，請確認 API Key 與餘額。";
+          statusEl.classList.add("status-error");
+          return;
+        }
+
+        const data = await res.json();
+        const choice = data.choices && data.choices[0];
+        if (!choice) {
+          statusEl.textContent = "回傳內容異常，找不到 choices。";
+          statusEl.classList.add("status-error");
+          return;
+        }
+
+        let content = choice.message && choice.message.content;
+        let textOut = "";
+
+        if (typeof content === "string") {
+          textOut = content;
+        } else if (Array.isArray(content)) {
+          // 有些情況會以多段 content 回傳
+          textOut = content.map(part => part.text || part).join("");
+        } else {
+          textOut = JSON.stringify(content);
+        }
+
+        let parsed;
+        try {
+          parsed = JSON.parse(textOut);
+        } catch (e) {
+          console.error("JSON parse error:", e, textOut);
+          statusEl.textContent = "模型輸出不是有效 JSON，請稍後重試。";
+          statusEl.classList.add("status-error");
+          return;
+        }
+
+        fillOutputs(parsed);
+        document.getElementById("outputCard").style.display = "block";
+        statusEl.textContent = "已產生完成，可以複製使用。";
+        statusEl.classList.add("status-ok");
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "呼叫 API 或網路時發生錯誤。";
+        statusEl.classList.add("status-error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "⚡ 產生中英文描述詞";
+      }
+    }
+
+    function fillOutputs(json) {
+      const enTitleDesc = document.getElementById("enTitleDesc");
+      const enPromptArea = document.getElementById("enPromptArea");
+      const zhTitleDesc = document.getElementById("zhTitleDesc");
+      const zhPromptArea = document.getElementById("zhPromptArea");
+      const enTagsBox = document.getElementById("enTagsBox");
+      const zhTagsBox = document.getElementById("zhTagsBox");
+
+      const titleEn = json.title_en || "";
+      const descEn = json.desc_en || "";
+      const promptEn = json.prompt_en || "";
+      const titleZh = json.title_zh || "";
+      const descZh = json.desc_zh || "";
+      const promptZh = json.prompt_zh || "";
+      const tagsEn = Array.isArray(json.tags_en) ? json.tags_en : [];
+      const tagsZh = Array.isArray(json.tags_zh) ? json.tags_zh : [];
+
+      enTitleDesc.value = (titleEn ? "Title: " + titleEn + "\n\n" : "") +
+                          (descEn ? "Description:\n" + descEn : "");
+      enPromptArea.value = promptEn;
+
+      zhTitleDesc.value = (titleZh ? "標題： " + titleZh + "\n\n" : "") +
+                          (descZh ? "說明：\n" + descZh : "");
+      zhPromptArea.value = promptZh;
+
+      enTagsBox.innerHTML = "";
+      zhTagsBox.innerHTML = "";
+
+      if (tagsEn.length) {
+        const label = document.createElement("div");
+        label.className = "small";
+        label.textContent = "English tags:";
+        enTagsBox.appendChild(label);
+        tagsEn.forEach(t => {
+          const span = document.createElement("span");
+          span.className = "pill";
+          span.textContent = t;
+          enTagsBox.appendChild(span);
+        });
+      }
+
+      if (tagsZh.length) {
+        const label = document.createElement("div");
+        label.className = "small";
+        label.textContent = "中文關鍵字：";
+        zhTagsBox.appendChild(label);
+        tagsZh.forEach(t => {
+          const span = document.createElement("span");
+          span.className = "pill";
+          span.textContent = t;
+          zhTagsBox.appendChild(span);
+        });
+      }
+    }
+
+    document.getElementById("generateBtn").addEventListener("click", () => {
+      handleGenerate();
+    });
+  </script>
+</body>
+</html>
